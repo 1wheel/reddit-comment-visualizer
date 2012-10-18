@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Graph Reddit Comments</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="commentDL">
+	<h1>Download Reddit Comment History</h1>
+	<form id="userNameForm" onsubmit="return startQuery();">
+		<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..."  value="1wheel"/> 
+		<input type="button" value="Download and Graph" onclick="startQuery();"/>
+	</form>
+	<span id="info"></span>
+</div>
+
+<div id="settingsContainer" class="hidden">
+	<h2>Graph Settings</h2>
+	<div id="graphTypeSelects">
+		<h3>Graph Type</h3>
+		Type: 
+		<select id = "graphType">
+			<option selected="selected">Histogram</option>
+			<option >Histograph</option>
+			<option >Pie Chart</option>
+			<option >Scatter Plot</option>
+		</select>
+		<br />
+		Data:&nbsp
+		<select id = "graphData">
+			<option>Length</option>
+			<option selected="selected">Karma</option>
+			<option>Number</option>
+		</select>
+	</div>
+	<div id="Filters">
+		<h3>Comment Filters</h3>
+			Minimum Karma: &nbsp<input id="minKarma" value = -100 type="number" class="numInput"/>  
+			Maximum Karma: <input id="maxKarma" value = 1000 type="number" class="numInput"/>
+		<br />
+		<br />
+			Minimum Length: &nbsp<input id="minLength" value = 0 type="number" class="numInput"/> 
+			Maximum Length: <input id="maxLength" value = 10000 type="number" class="numInput"/>
+		<br />
+		<br />
+			Start Data:
+			<input id="minDate" value = "1/1/2000" type="date" class="dateInput"/> 
+			<br />
+			End Data:&nbsp
+			<input id="maxDate" value = "1/1/2020" type="date" class="dateInput"/>
+	</div>	
+	<div id="subrestrictions">
+		<h3>Subreddit Filter</h3>
+		<div id='radio'>
+			<input id = "requireSubs" name="radioReddits" type="radio" value="true"/>Require &nbsp
+			<input id = "prohibtSubs" name="radioReddits" type="radio" value="false" checked/>Prohibit
+		</div>
+		<input id="requiredReddits" />
+		Seperate each with a space
+	</div>
+
+
+	<div id="user">
+		<h3>User Name<h3>
+		<input id="secoundTextBox" value = "" /> 	
+		<input type="button" value="Update Graph" onclick="updateGraph();"/>
+	</div>
+	<br />
+	<span id="info2"><span>
+</div>
+ 
+<div id="graphContainer" class="hidden">	
+	<h1 id="graphTitle"></h1>	
+	<div id="graph" style="width:600px;height:600px" ></div>
+	<div id="legend"></div>
+
+</div>
+
+<div id="commentTextContainer" class="hidden">
+	<div id="scatterDetails" class="detail">
+		<h2>Comment Details</h2>
+		<h4>Subreddit: </h4><span id="cSubreddit"> </span><br />
+		<h4>Posted: </h4><span id="cPosted"></span><br />
+		<h4>Karma: </h4><span id="cKarma"></span><br />
+		<h4>Thread Title: </h4><span id="cThreadTitle"></span><br /><br />
+		<h4>Text: </h4><br /><span id="cText"></span><br />
+	</div>
+	<div id="pieDetails" class="detail">		
+		<h2>Details</h2>
+		<h4>Subreddit: </h4><span id="pSubreddit"> </span><br />
+		<h4>First Post: </h4><span id="pFirst"></span><br />
+		<h4>Last Post: </h4><span id="pLast"></span><br />
+		<h4>Total Posts: </h4><span id="pTPost"></span><br />
+		<h4>Total Karma: </h4><span id="pTKarma"></span><br />
+		<h4>Total Characters: </h4><span id="pTChar"></span><br />
+		<h4>Karma per Post: </h4><span id="pKarmaPerPost"></span><br />
+		<h4>Characters per Post: </h4><span id="pCharPerPost"></span><br />
+</div>
+
+
+</body>​	
+
+
+<script src="flot/jquery.js"></script>
+<script src="flot/jquery.flot.js"></script>
+<script src="flot/jquery.flot.time.js"></script>
+<script src="flot/jquery.flot.pie.js"></script>
+<script src="flot/jquery.flot.stack.js"></script>
+
+ <script type="text/javascript" src="scatterplot.js"></script>
+ <script type="text/javascript" src="simple.js"></script>
+
+</html>

@@ -1,0 +1,73 @@
+h4{
+	display:inline;
+}
+
+h1{
+	margin-bottom: 0px;
+}
+
+h2{
+	margin-top: 0px;
+	margin-bottom: 3px;
+}
+
+h3{
+	margin-bottom: 3px;
+}
+
+
+#commentDL{
+	text-align: center;
+}
+
+#firstTextBox{
+	width: 14em;
+}
+
+#settingsContainer {
+	position:relative;
+    float: left;
+    width: 200px;
+}
+
+#graphContainer {
+	position:relative;
+    float: left;
+    width: 600px;
+    text-align: center ;
+}
+
+#graph{
+
+}
+
+#legend{
+    margin-left: 30px;
+
+}
+
+#commentTextContainer {
+	position:relative;
+    float: left;
+    width: 300px;
+}
+
+#footer {
+    clear: both;
+}
+
+.numInput{
+	width: 70px;
+}
+
+.dateInput{
+	width: 100px;
+}
+
+.hidden{
+	visibility:hidden;
+}
+
+.md{
+	display:inline;	
+}
