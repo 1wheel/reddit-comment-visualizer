@@ -1,13 +1,11 @@
 var queryURL;
-
 var rawCommentArray = [];
 var currentPlot;
 var userName;
 var currentlyQuerying = false;
-
 var graphDisplayed = false;
-var lastItem;
 
+//formats and starts a query is one isn't currently running
 function startQuery(){
 	if (!currentlyQuerying){
 		currentPlot = null;
@@ -22,6 +20,7 @@ function startQuery(){
 	}
 }
 
+//looks up next 100 comments
 function queryReddit(after, count){
 	updateInfo("searching reddit...");
 	$.getJSON(queryURL, {
@@ -36,9 +35,10 @@ function queryReddit(after, count){
 		 	updateInfo("No response from reddit - either the username is incorrect or servers are down");
 		 	currentlyQuerying = false;
 		}
-	}, 3000);
+	}, 4000);
 }
 
+//called after every batch of comments is downloaded; calls queryReddit if there are more comments
 function logResult( result, count){
 	if (count == 0 && result.data.children.length == 0){
 		updateInfo("User has no comment history - try another name");
@@ -64,6 +64,7 @@ function logResult( result, count){
 	updateGraph();
 }
 
+//formats and graphs raw data from reddit
 function updateGraph(){
 	updateInfo("Drawing Graph");
 	if (userName != $("#secoundTextBox").val()){
@@ -79,21 +80,26 @@ function updateGraph(){
 		currentPlot = new CreateCurrentPlot("Time", $("#graphData").val(),$("#graphType").val());
 		currentPlot.drawGraph();
 		resizeElements();	
-		updateInfo("Graph completed with " + rawCommentArray.length + " comments (max of 1000).")
+		var infoString = "";
+		infoString = infoString + "Graph completed with " + currentPlot.points.length + " of " + rawCommentArray.length + " possible comments used";
+		infoString += (rawCommentArray.length > 999 ) ? " (a max of 1000 comments can be downloaded from reddit)." : ".";
+		updateInfo(infoString);
 	}
 }
 
-//called first time query is successful; shows graph and settings
+//called first time query is successful; shows graph and settings while hidding the initial title
 function displayGraph(){
 	$('.hidden').css({"visibility":"visible"});
 	$('#commentDL').css({"visibility":"hidden","height":"0px"});
 	document.getElementById("secoundTextBox").value = value = $("#firstTextBox").val();
-	var inputs = ["graphType", "graphData", "minKaram", "maxKarma", "minLength", "maxLength", "minDate", "maxDate"];
+	var inputs = ["graphType", "graphData", "minKarma", "maxKarma", "minLength", "maxLength", "minDate", "maxDate"];
 	for (var id in inputs){
 		if (inputs.hasOwnProperty(id)) {
 			$("#"+inputs[id]).bind("input", function() {updateGraph()});
 		}
 	}
+	$("#graphType").bind("change", function() {updateGraph()});
+	$("#graphData").bind("change", function() {updateGraph()});
 
 	graphDisplayed = true;
 }
@@ -122,4 +128,5 @@ $(window).resize(function() {
 function updateInfo(str){
 	$("#info").html(str);
 	$("#info2").html(str);
+	//console.log(str);
 }

@@ -28,6 +28,7 @@ h3{
 	position:relative;
     float: left;
     width: 200px;
+    overflow:hidden;
 }
 
 #graphContainer {
@@ -61,7 +62,7 @@ h3{
 }
 
 .dateInput{
-	width: 100px;
+	width: 113px;
 }
 
 .hidden{
@@ -70,4 +71,8 @@ h3{
 
 .md{
 	display:inline;	
+}
+
+.filter{
+	white-space:nowrap;
 }

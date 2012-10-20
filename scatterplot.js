@@ -1,14 +1,13 @@
+//this function is called to create a graph; it is a bit of a mess right now
 function CreateCurrentPlot(x, y, type){
 	this.type = type;
-	this.points = [];
-	this.pointsSmoothed = [];
-	this.subredditPoints = {};
-	this.subredditSums = [];
-	this.r = new createRestrictionFilter();
-	this.rawCommentIndex = [];
-	this.rawCommentSubredditIndex = {};
-	this.rawFilteredComments = [];
-	this.rawFilteredSubredditComments = {};
+	this.points = [];							//points to graph
+	this.subredditPoints = {};					//points grouped by subredit
+	this.subredditSums = [];					//sorted array by total points of {label: subreddit, data: sum}
+	this.r = new createRestrictionFilter();		//filter for comments
+	this.rawCommentSubredditIndex = {};			//stores orginal index of comment before filtering and grouping by subreddit
+	this.rawFilteredComments = [];				//stores entirety of comment responce
+	this.rawFilteredSubredditComments = {};		//stores entirety of comment responce grouped by subreddit
 	this.graphTitle = " ";
 
 	//finds all comments that match filter
@@ -16,7 +15,7 @@ function CreateCurrentPlot(x, y, type){
 	for (var i = 0; i < rawCommentArray.length; i++){	
 		if (!this.r.isFiltered(rawCommentArray[i])){			
 			cSubreddit = rawCommentArray[i].subreddit;
-			this.rawCommentIndex.push(i);
+
 			this.rawCommentSubredditIndex[cSubreddit] = (this.rawCommentSubredditIndex[cSubreddit]) ?
 				this.rawCommentSubredditIndex[cSubreddit] : [];
 			this.rawCommentSubredditIndex[cSubreddit].push(i);
@@ -29,6 +28,7 @@ function CreateCurrentPlot(x, y, type){
 		}
 	}
 
+	//iterates over list of valid comments, find their karma or length
 	for (var i = 0; i < this.rawFilteredComments.length; i++){
 		cSubreddit = this.rawFilteredComments[i].subreddit;
 
@@ -39,6 +39,7 @@ function CreateCurrentPlot(x, y, type){
 		this.subredditPoints[cSubreddit].push(this.points[this.points.length - 1]);
 	}
 
+	//sums and sorts comment points by subreddit 
 	for (var sub in this.subredditPoints) {
 		if (this.subredditPoints.hasOwnProperty(sub)) {
 			var sum = 0;
@@ -48,36 +49,34 @@ function CreateCurrentPlot(x, y, type){
 			this.subredditSums.push({ data: sum, label: sub});  		
 		}
 	}
-
 	this.subredditSums.sort( function(a,b) {return b.data-a.data} );
 
-	this.pointsSmoothed = smoother(this.points, 400, 10);
-
+	//removes old listeners
 	$("#graph").unbind("plothover");
 	$("#graph").unbind("plotclick");
 
-	if (this.type=="Scatter Plot"){
-		this.graphTitle = (y == "Number") ? userName + "'s Adverage Comments per Day" : userName + "'s Comments: " + x + " v. " +  y;
+	//scatter plot spefic code here
+	if (this.type=="Scatter Plot"){	
+		this.graphTitle = (y == "Number") ? userName + "'s Average Comments per Day" : userName + "'s Comments: " + x + " v. " +  y;
 
 		this.drawGraph = function(){
 			setGraphWidth();
 			var graphData = [];
 
+			//loops over all the subreddits, adding them to the graph seperatly to enable different colored points
 			for (var i = 0;  i < this.subredditSums.length; i++){
 				var sub = this.subredditSums[i].label;
 		 		graphData.push({ data: this.subredditPoints[sub], points: {show: true}, 
 		 			label: sub}) ;  		
 			}
 
-			graphData.push({ data: this.pointsSmoothed, hoverable: false, clickable: false, color: "black"});
-	 		
+			graphData.push({ data: smoother(currentPlot.points, 400, 100), hoverable: false, clickable: false, color: "black"});
 
 			$.plot($("#graph"), graphData,
 			   { 
 			       xaxes: [ { mode: 'time' } ],
 			       grid: { hoverable: true, clickable: true},
-			       legend: {noColumns:3, container:$("#legend"), 
-			       sorted:function sortLabels(a,b){return subredditIndex(a) > subredditIndex(b)}}
+			       legend: {noColumns:3, container:$("#legend")}
 			   });
 
 			centerLegend();
@@ -95,6 +94,7 @@ function CreateCurrentPlot(x, y, type){
 				window.open(generateCommentLink(currentPlot.rawCommentSubredditIndex[item.series.label][item.dataIndex]), '_blank');
 		    }
 		});
+		displayCommentDetail(0);
 	}
 
 	if (this.type == "Pie Chart"){		
@@ -139,6 +139,8 @@ function CreateCurrentPlot(x, y, type){
 		this.graphTitle = (y == "Number") ? 
 			"Histogram of " + userName + "'s Adverage Comments per Day" : 
 			"Histogram of the " + y + " of " + userName + "'s Comments";
+
+		//creates histograph ready data
 		var max = -10000;
 		var min = 100000;
 		for (var i = 0; i < this.points.length; i++){
@@ -210,6 +212,7 @@ function CreateCurrentPlot(x, y, type){
 				window.open(generateCommentLink(currentPlot.histLookup[item.series.label][x][y]), '_blank');
 		    }
 		});
+		displayCommentDetail(0);
 	}
 
 	if (this.type == "Histograph"){
@@ -316,6 +319,7 @@ function CreateCurrentPlot(x, y, type){
 	            window.open(generateCommentLink(currentPlot.histLookup[item.series.label][x]), '_blank');
 		    }
 		});
+		displayCommentDetail(0);
 	}
 }
 
@@ -344,8 +348,8 @@ function createRestrictionFilter(){
 	this.maxKaram = $("#maxKarma").val();
 	this.minLength = $("#minLength").val();
 	this.maxLength = $("#maxLength").val();
-	this.minDate =  $("#maxDate").val() ? new Date($("#minDate").val()) : new Date("1-1-1970");
-	this.maxDate =  $("#maxDate").val() ? new Date($("#minDate").val()) : new Date("1-1-2020");
+	this.minDate =  $("#minDate").val() ? new Date($("#minDate").val()) : new Date("1-1-1970");
+	this.maxDate =  $("#maxDate").val() ? new Date($("#maxDate").val()) : new Date("1-1-2020");
 	this.requireReddits = $('input[@name="radioReddits"]:checked').val() === "true";
 	this.requiredReddits = $("#requiredReddits").val().split(" ");
 
@@ -363,7 +367,6 @@ function createRestrictionFilter(){
 			return true;
 		}
 
-		
 		return false;
 	}
 }
@@ -389,14 +392,17 @@ function displayCommentDetail(index){
 	$('#scatterDetails').css({"visibility":"visible", "height":"auto"});
 	$('#pieDetails').css({"visibility":"hidden"});
 
-	var d = document.createElement("div");
-	d.innerHTML = rawCommentArray[index].body_html;
-
-	document.getElementById("cText").innerHTML = d.innerText;
+	document.getElementById("cText").innerHTML = htmlDecode(rawCommentArray[index].body_html);
 	document.getElementById("cSubreddit").innerHTML = rawCommentArray[index].subreddit;
 	document.getElementById("cThreadTitle").innerHTML = rawCommentArray[index].link_title;
 	document.getElementById("cPosted").innerHTML = (new Date(rawCommentArray[index].created*1000)).toDateString();
 	document.getElementById("cKarma").innerHTML = rawCommentArray[index].ups-rawCommentArray[index].downs;
+}
+
+function htmlDecode(input){
+	var e = document.createElement('div');
+	e.innerHTML = input;
+	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
 
 function displayPieDetail(array, name){
@@ -506,6 +512,7 @@ function smoother(data, points, radius){
 		for (var j = -radius; j<=radius; j++){
 			if (0<=start+j && start+j<data.length){
 				weight = tricubicKenral(ix, data[start+j][0], max, min);
+				//console.log(weight);
 				numerator += weight*data[start+j][1];
 				denominator += weight;
 			}
@@ -518,12 +525,17 @@ function smoother(data, points, radius){
 }
 
 function epanechnikovKernal(x, x0, max, min){
-	var u = (x - x0 - min) / (max - min);
+	var u = (x - x0) / (max - min);
 	return 3/4*(1 - Math.pow(u,2));
 }
 
 function tricubicKenral(x, x0, max, min){
-	var u = Math.abs((x - x0 - min) / ((max - min)));
+	var u = Math.min(1,Math.abs((x - x0) / ((max - min)/10)));
+	if (70/81*Math.pow((1 - Math.pow(u,8)),3)<-1){
+		sv = {u:u,x:x,x0:x0,max:max,min:min};
+		console.log(sv);
+		sv.car = sv.dog;
+		throw 3;
+	}
 	return 70/81*Math.pow((1 - Math.pow(u,3)),3);
-
 }

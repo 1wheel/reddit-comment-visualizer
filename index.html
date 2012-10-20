@@ -10,7 +10,7 @@
 <div id="commentDL">
 	<h1>Download Reddit Comment History</h1>
 	<form id="userNameForm" onsubmit="return startQuery();">
-		<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..."  value="1wheel"/> 
+		<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..." /> 
 		<input type="button" value="Download and Graph" onclick="startQuery();"/>
 	</form>
 	<span id="info"></span>
@@ -22,27 +22,27 @@
 		<h3>Graph Type</h3>
 		Type: 
 		<select id = "graphType">
-			<option selected="selected">Histogram</option>
+			<option>Histogram</option>
 			<option >Histograph</option>
 			<option >Pie Chart</option>
-			<option >Scatter Plot</option>
+			<option  selected="selected">Scatter Plot</option>
 		</select>
 		<br />
 		Data:&nbsp
 		<select id = "graphData">
-			<option>Length</option>
-			<option selected="selected">Karma</option>
+			<option selected="selected">Length</option>
+			<option>Karma</option>
 			<option>Number</option>
 		</select>
 	</div>
 	<div id="Filters">
 		<h3>Comment Filters</h3>
-			Minimum Karma: &nbsp<input id="minKarma" value = -100 type="number" class="numInput"/>  
-			Maximum Karma: <input id="maxKarma" value = 1000 type="number" class="numInput"/>
+			<span class="filter">Minimum Karma: &nbsp<input id="minKarma" value = -100 type="number" class="numInput"/> </span> 
+			<span class="filter">Maximum Karma: <input id="maxKarma" value = 1000 type="number" class="numInput"/></span> 
 		<br />
 		<br />
-			Minimum Length: &nbsp<input id="minLength" value = 0 type="number" class="numInput"/> 
-			Maximum Length: <input id="maxLength" value = 10000 type="number" class="numInput"/>
+			<span class="filter">Minimum Length: &nbsp<input id="minLength" value = 0 type="number" class="numInput"/> </span> 
+			<span class="filter">Maximum Length: <input id="maxLength" value = 10000 type="number" class="numInput"/></span> 
 		<br />
 		<br />
 			Start Data:
@@ -63,12 +63,15 @@
 
 
 	<div id="user">
-		<h3>User Name<h3>
+		<h3>User Name</h3>
 		<input id="secoundTextBox" value = "" /> 	
 		<input type="button" value="Update Graph" onclick="updateGraph();"/>
 	</div>
 	<br />
-	<span id="info2"><span>
+	<span id="info2"></span>
+	<br />
+	<br />
+	<a href="http://www.roadtolarissa.com/reddit-comment-visualizer/">About</a>
 </div>
  
 <div id="graphContainer" class="hidden">	
