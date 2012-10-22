@@ -16,6 +16,8 @@ h3{
 }
 
 
+
+
 #commentDL{
 	text-align: center;
 }
@@ -27,8 +29,57 @@ h3{
 #settingsContainer {
 	position:relative;
     float: left;
-    width: 200px;
+    width: 215px;
     overflow:hidden;
+}
+
+#graphTypeImages {
+  border: 0px solid #000000;
+  column-count:2;
+}
+
+.graphimg{
+	padding:5px;
+	border: solid 1px #EFEFEF;
+	opacity:.5;
+}
+
+.graphimg:hover {
+	border: solid 1px #CCC;
+	-moz-box-shadow: 1px 1px 5px #999;
+	-webkit-box-shadow: 1px 1px 5px #999;
+    box-shadow: 1px 1px 5px #999;
+    opacity:1;
+}
+
+.selected {
+	border: solid 1px Black !important;
+    opacity:1 !important;
+}
+
+#Filters{
+}
+
+#sliders{
+	position:relative;
+	left: 12px;
+	width:170px;
+}
+
+.slider{
+}
+
+.ui-slider .ui-slider-handle {
+	position: absolute;
+	z-index: 2;
+	width: .7em !important;
+	height: 1.2em !important;
+	cursor: default;
+}
+
+#subrestrictions{
+	visibility: hidden;
+	height: 0px;
 }
 
 #graphContainer {
@@ -48,9 +99,12 @@ h3{
 }
 
 #commentTextContainer {
+	z-index: 999;
+	border-left: 4px;
 	position:relative;
     float: left;
     width: 300px;
+    background-color: #FFFFFF;
 }
 
 #footer {
@@ -66,7 +120,7 @@ h3{
 }
 
 .hidden{
-	visibility:hidden;
+	visibility:visible;
 }
 
 .md{

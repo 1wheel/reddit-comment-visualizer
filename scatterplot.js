@@ -1,5 +1,6 @@
 //this function is called to create a graph; it is a bit of a mess right now
 function CreateCurrentPlot(x, y, type){
+	console.log("updating plot");
 	this.type = type;
 	this.points = [];							//points to graph
 	this.subredditPoints = {};					//points grouped by subredit
@@ -9,6 +10,7 @@ function CreateCurrentPlot(x, y, type){
 	this.rawFilteredComments = [];				//stores entirety of comment responce
 	this.rawFilteredSubredditComments = {};		//stores entirety of comment responce grouped by subreddit
 	this.graphTitle = " ";
+	this.extremeValues = {};
 
 	//finds all comments that match filter
 	var cSubreddit;
@@ -27,6 +29,9 @@ function CreateCurrentPlot(x, y, type){
 			this.rawFilteredSubredditComments[cSubreddit].push(rawCommentArray[i])
 		}
 	}
+
+	//saves max and min values for range sliders
+	this.extremeValues = findExtremeValues(this.rawFilteredComments);
 
 	//iterates over list of valid comments, find their karma or length
 	for (var i = 0; i < this.rawFilteredComments.length; i++){
@@ -56,7 +61,7 @@ function CreateCurrentPlot(x, y, type){
 	$("#graph").unbind("plotclick");
 
 	//scatter plot spefic code here
-	if (this.type=="Scatter Plot"){	
+	if (this.type=="ScatterPlot"){	
 		this.graphTitle = (y == "Number") ? userName + "'s Average Comments per Day" : userName + "'s Comments: " + x + " v. " +  y;
 
 		this.drawGraph = function(){
@@ -97,7 +102,7 @@ function CreateCurrentPlot(x, y, type){
 		displayCommentDetail(0);
 	}
 
-	if (this.type == "Pie Chart"){		
+	if (this.type == "PieChart"){		
 		this.graphTitle = y + " of " + userName + "'s Comments by Subreddit";
 
 		this.drawGraph = function(){
@@ -324,9 +329,26 @@ function CreateCurrentPlot(x, y, type){
 }
 
 function setGraphWidth(){
-	var width = Math.max($(window).width()-500-40,450);
-	$('#graphContainer').css({"width":width});
-	$('#graph').css({"width":width});
+	var width = $(window).width() - 25;
+	var sWidth = 215;
+	var gWidth = 600;
+	var cWidth = 300;
+	if (width < 900){
+		sWidth = width;
+		if (width < 600){
+			gWidth = width;
+		}
+		else {
+			gWidth = width - cWidth;
+		}
+	}
+	else {
+		gWidth = width - sWidth - cWidth;
+	}
+
+	$('#settingsContainer').css({"width":sWidth});
+	$('#graphContainer').css({"width":gWidth});
+	$('#graph').css({"width":gWidth});
 	$("#graphTitle").html(currentPlot.graphTitle);
 }
 
@@ -344,14 +366,14 @@ function subredditIndex(name){
 }
 
 function createRestrictionFilter(){
-	this.minKarma = $("#minKarma").val();
-	this.maxKaram = $("#maxKarma").val();
-	this.minLength = $("#minLength").val();
-	this.maxLength = $("#maxLength").val();
-	this.minDate =  $("#minDate").val() ? new Date($("#minDate").val()) : new Date("1-1-1970");
-	this.maxDate =  $("#maxDate").val() ? new Date($("#maxDate").val()) : new Date("1-1-2020");
-	this.requireReddits = $('input[@name="radioReddits"]:checked').val() === "true";
-	this.requiredReddits = $("#requiredReddits").val().split(" ");
+	this.minKarma = getSliderValue("#karma")[0];
+	this.maxKaram = getSliderValue("#karma")[1];
+	this.minLength = getSliderValue("#length")[0];
+	this.maxLength = getSliderValue("#length")[1];
+	this.minDate = getSliderValue("#date")[0];
+	this.maxDate =  getSliderValue("#date")[1];
+	//this.requireReddits = $('input[@name="radioReddits"]:checked').val() === "true";
+	//this.requiredReddits = $("#requiredReddits").val().split(" ");
 
 	this.isFiltered = function(data){
 		if (this.minKarma >= data.ups-data.downs || this.maxKaram <= data.ups-data.downs){
@@ -363,11 +385,20 @@ function createRestrictionFilter(){
 		if (this.minDate >= new Date(data.created*1000) || this.maxDate <= new Date(data.created*1000)){
 			return true;
 		}
-		if (!(subredditPresent(data.subreddit, this.requiredReddits) == this.requireReddits)){
-			return true;
-		}
+	//	if (!(subredditPresent(data.subreddit, this.requiredReddits) == this.requireReddits)){
+	//		return true;
+	//	}
 
 		return false;
+	}
+}
+
+function getSliderValue(name){
+	try{
+		return $(name + "Slider").slider("values");
+	}
+	catch(e){
+		return [2350853047704, -1350853047704];
 	}
 }
 
@@ -473,7 +504,7 @@ function commentLength(str){
 function commentNumber(index, array){
 	sv = index;
 	sd = array;
-	if (document.getElementById("graphType").selectedIndex == 3 || document.getElementById("graphType").selectedIndex == 0){
+	if (currentType == "ScatterPlot" || currentType == "Histogram"){
 		var less = 0;
 		while (array[index-less] && array[index-less].created - array[index].created < 604800){
 			less++;
@@ -538,4 +569,26 @@ function tricubicKenral(x, x0, max, min){
 		throw 3;
 	}
 	return 70/81*Math.pow((1 - Math.pow(u,3)),3);
+}
+
+function findExtremeValues(array){
+	var rv = 	{minKarma: 99999, maxKarma: -99999, minLength: 9999999, maxLength: 0,
+				minDate: 10000000000000, maxDate: 0};
+	var karma;
+	var length;
+	var date;
+	for (var i = 0; i < array.length; i++){
+		karma = array[i].ups - array[i].downs;
+		rv.minKarma = (rv.minKarma < karma) ? rv.minKarma : karma;
+		rv.maxKarma = (rv.maxKarma > karma) ? rv.maxKarma : karma;
+
+		length = commentLength(array[i].body);
+		rv.minLength = (rv.minLength < length) ? rv.minLength : length;
+		rv.maxLength = (rv.maxLength > length) ? rv.maxLength : length;
+
+		date = array[i].created*1000;		
+		rv.minDate = (rv.minDate < date) ? rv.minDate : date;
+		rv.maxDate = (rv.maxDate > date) ? rv.maxDate : date;
+	}
+	return rv;
 }

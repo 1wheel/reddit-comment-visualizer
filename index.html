@@ -19,37 +19,37 @@
 <div id="settingsContainer" class="hidden">
 	<h2>Graph Settings</h2>
 	<div id="graphTypeSelects">
-		<h3>Graph Type</h3>
-		Type: 
-		<select id = "graphType">
-			<option>Histogram</option>
-			<option >Histograph</option>
-			<option >Pie Chart</option>
-			<option  selected="selected">Scatter Plot</option>
-		</select>
+		<h3>Type</h3>
+
+		<div id="graphTypeImages">
+			<img class="graphimg" id="Histograph" src="img/histograph.png" Title="Histograph">
+			<img class="graphimg" id ="Histogram" src="img/histogram.png" Title="Histogram">
+			<img class="graphimg" id = "PieChart"src="img/pie.png" Title="Pie Chart">
+			<img class="graphimg selected" id = "ScatterPlot" src="img/scatter.png" Title="Scatter Plot">
+		</div>
+
 		<br />
-		Data:&nbsp
-		<select id = "graphData">
-			<option selected="selected">Length</option>
-			<option>Karma</option>
-			<option>Number</option>
-		</select>
+		<h3>Data</h3>
+
+		<div id="graphTypeImages">
+			<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
+			<img class="graphimg selected" id ="Length" src="img/length.png" Title="Length">
+			<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
+		</div>
+
 	</div>
 	<div id="Filters">
-		<h3>Comment Filters</h3>
-			<span class="filter">Minimum Karma: &nbsp<input id="minKarma" value = -100 type="number" class="numInput"/> </span> 
-			<span class="filter">Maximum Karma: <input id="maxKarma" value = 1000 type="number" class="numInput"/></span> 
+		<h3>Filters</h3>
+		<div id = "sliders">
+			<span class="filter">Karma: <span id="karmaRange"></span></span> 
+			<div id="karmaSlider" class = "slider"></div>
 		<br />
+			<span class="filter">Length: <span id="lengthRange"></span></span> 
+			<div id="lengthSlider"class = "slider"></div>
 		<br />
-			<span class="filter">Minimum Length: &nbsp<input id="minLength" value = 0 type="number" class="numInput"/> </span> 
-			<span class="filter">Maximum Length: <input id="maxLength" value = 10000 type="number" class="numInput"/></span> 
-		<br />
-		<br />
-			Start Data:
-			<input id="minDate" value = "1/1/2000" type="date" class="dateInput"/> 
-			<br />
-			End Data:&nbsp
-			<input id="maxDate" value = "1/1/2020" type="date" class="dateInput"/>
+			<span class="filter">Date: <span id="dateRange"></span></span> 
+			<div id="dateSlider" class = "slider"></div>
+		</div>
 	</div>	
 	<div id="subrestrictions">
 		<h3>Subreddit Filter</h3>
@@ -72,6 +72,8 @@
 	<br />
 	<br />
 	<a href="http://www.roadtolarissa.com/reddit-comment-visualizer/">About</a>
+	<br />
+	<br />
 </div>
  
 <div id="graphContainer" class="hidden">	
@@ -105,12 +107,16 @@
 
 </body>​	
 
+<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
 
-<script src="flot/jquery.js"></script>
 <script src="flot/jquery.flot.js"></script>
 <script src="flot/jquery.flot.time.js"></script>
 <script src="flot/jquery.flot.pie.js"></script>
 <script src="flot/jquery.flot.stack.js"></script>
+
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
 
  <script type="text/javascript" src="scatterplot.js"></script>
  <script type="text/javascript" src="simple.js"></script>

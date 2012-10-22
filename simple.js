@@ -4,6 +4,14 @@ var currentPlot;
 var userName;
 var currentlyQuerying = false;
 var graphDisplayed = false;
+var extremeValues = {};
+
+var currentType = "ScatterPlot";
+var currentData = "Length";
+
+var currentlyUpdating = false;
+var updateAgain = false;
+var lastSlide = 0;
 
 //formats and starts a query is one isn't currently running
 function startQuery(){
@@ -52,9 +60,14 @@ function logResult( result, count){
 		rawCommentArray.push(result.data.children[i].data);
 	}
 
+	extremeValues = findExtremeValues(rawCommentArray);
+	createSlider("#karma", function(x){return x;}, extremeValues.minKarma, extremeValues.maxKarma);
+	createSlider("#length", function(x){return x;}, extremeValues.minLength, extremeValues.maxLength);
+	createSlider("#date", intToDateStr, extremeValues.minDate, extremeValues.maxDate);
+
 	updateInfo(count + " comments found");
 
-	if (result.data.after && count<4000){
+	if (result.data.after && count<400000){
 		queryReddit(result.data.after, count+100);
 	}
 	else {
@@ -75,15 +88,20 @@ function updateGraph(){
 		updateInfo("No info to graph - try another user name");
 	}
 	else{
+		currentlyUpdating = true;
+		updateAgain - false;
 		currentPlot = {};
-
-		currentPlot = new CreateCurrentPlot("Time", $("#graphData").val(),$("#graphType").val());
+		currentPlot = new CreateCurrentPlot("Time", currentData,currentType);
 		currentPlot.drawGraph();
 		resizeElements();	
 		var infoString = "";
 		infoString = infoString + "Graph completed with " + currentPlot.points.length + " of " + rawCommentArray.length + " possible comments used";
 		infoString += (rawCommentArray.length > 999 ) ? " (a max of 1000 comments can be downloaded from reddit)." : ".";
 		updateInfo(infoString);
+		if (updateAgain){
+			"setTimeout(updateGraph(),50)";
+		}
+		currentlyUpdating = false;
 	}
 }
 
@@ -130,3 +148,78 @@ function updateInfo(str){
 	$("#info2").html(str);
 	//console.log(str);
 }
+
+function createSlider(name, prnt, min, max){
+	$(name+"Slider").unbind("change");
+    $(name+"Slider").slider({
+        range: true,
+        min: min,
+        max: max,
+        values: [min, max],
+        slide: function( event, ui ) {
+            $(name+"Range").text(" " + prnt(ui.values[0]) + " to " + prnt(ui.values[1]));
+            updateSliderQueue();
+        }
+    });
+    $(name+"Range").text(prnt(min) + " to " + prnt(max));
+}
+
+function intToDateStr(int){
+    var date = new Date(int);
+    return "" + (date.getMonth()+1)+ "/" + date.getDate() + "/" + date.getFullYear();
+}
+
+function changeSelectedType(newType){
+	console.log(newType);
+	$("#" + newType).addClass("selected");
+	$("#" + currentType).removeClass("selected");
+	currentType = newType;
+	updateGraphQueue();
+}
+
+$("#ScatterPlot").click(function(){changeSelectedType("ScatterPlot");});
+$("#PieChart").click(function(){changeSelectedType("PieChart");});
+$("#Histograph").click(function(){changeSelectedType("Histograph");});
+$("#Histogram").click(function(){changeSelectedType("Histogram");});
+
+function changeSelectedData(newData){
+	console.log(newData);
+	$("#" + newData).addClass("selected");
+	$("#" + currentData).removeClass("selected");
+	currentData = newData;
+	updateGraphQueue();
+}
+
+$("#Karma").click(function(){changeSelectedData("Karma");});
+$("#Length").click(function(){changeSelectedData("Length");});
+$("#Number").click(function(){changeSelectedData("Number");});
+
+function updateGraphQueue(){
+	if (currentlyUpdating){
+		updateAgain = true;
+	}
+	else {
+		currentlyUpdating = true;
+		setTimeout("updateGraph()",100);
+	}
+}
+
+function updateSliderQueue(){
+	lastSlide = new Date().getTime();
+	setTimeout("checkSliderRefesh()",100);
+}
+
+function checkSliderRefesh(){
+	var currentTime = new Date().getTime();
+	if (80 < currentTime - lastSlide) {
+		console.log("sliiide");
+		updateGraphQueue();
+	}
+	else{
+		console.log("too soon to slide");
+	}
+}
+
+
+
+
