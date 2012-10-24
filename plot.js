@@ -140,13 +140,12 @@ function CreateCurrentPlot(x, y, type){
 	if (this.type == "PieChart"){		
 		this.graphTitle = y + " of " + userName + "'s Comments by Subreddit";
 
-		//orders pie chart based on reading level
-		//if (currentData == "ReadingLevel"){
-		//	for (var i = 0; i < this.subredditSums.length; i++)	{
-		//		var sub = this.subredditSums[i].label;
-		//		this.subredditSums[i].data = this.subredditSums[i].data/this.subredditPoints[sub].length;
-		//	}			
-		//}
+		if (currentData == "ReadingLevel"){
+			for (var i = 0; i < this.subredditSums.length; i++)	{
+				var sub = this.subredditSums[i].label;
+				this.subredditSums[i].data = this.subredditSums[i].data/this.subredditPoints[sub].length;
+			}			
+		}
 		this.subredditSums.sort( function(a,b) {return b.data-a.data} );
 
 		this.drawGraph = function(){

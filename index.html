@@ -6,109 +6,124 @@
 </head>
 
 <body>
-
-<div id="commentDL">
-	<h1>Download Reddit Comment History</h1>
-	<form id="userNameForm" onsubmit="return startQuery();">
-		<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..." /> 
-		<input type="button" value="Download and Graph" onclick="startQuery();"/>
-	</form>
-	<span id="info"></span>
-</div>
-
-<div id="settingsContainer" class="hidden">
-	<h2>Graph Settings</h2>
-	<div id="graphTypeSelects">
-		<h3>Type</h3>
-
-		<div id="graphTypeImages">
-			<img class="graphimg" id="Histograph" src="img/histograph.png" Title="Histograph">
-			<img class="graphimg" id ="Histogram" src="img/histogram.png" Title="Histogram">
-			<img class="graphimg" id = "PieChart"src="img/pie.png" Title="Pie Chart">
-			<img class="graphimg selected" id = "ScatterPlot" src="img/scatter.png" Title="Scatter Plot">
+		<div id="header">
+			<img src="img/header.png" Title="redditgraphs" height="50">
+			<span id="headerText">
+				<a class= "blacklink" href="http://www.roadtolarissa.com/tag/redditgraphs/">about</a>
+		 		<code>|</code> 
+		 		<a class= "blacklink" href="https://github.com/1wheel/reddit-comment-visualizer/">github</a>
+			</span>
 		</div>
 
-		<br />
-		<h3>Data</h3>
-
-		<div id="graphTypeImages">
-			<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
-			<img class="graphimg selected" id ="Length" src="img/length.png" Title="Length">
-			<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
+		<div id="commentDL">
+			<h1>Download Reddit Comment History</h1>
+			<form id="userNameForm" onsubmit="return startQuery();">
+				<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..."/> 
+				<input type="button" value="Download and Graph" onclick="startQuery();"/>
+			</form>
+			<span id="info"></span>
 		</div>
 
-	</div>
-	<div id="Filters">
-		<h3>Filters</h3>
-		<div id = "sliders">
-			<span class="filter">Karma: <span id="karmaRange"></span></span> 
-			<div id="karmaSlider" class = "slider"></div>
-		<br />
-			<span class="filter">Length: <span id="lengthRange"></span></span> 
-			<div id="lengthSlider"class = "slider"></div>
-		<br />
-			<span class="filter">Date: <span id="dateRange"></span></span> 
-			<div id="dateSlider" class = "slider"></div>
+		<div id="settingsContainer" class="hidden">
+			<div id="graphTypeSelects">
+				<h3>Type</h3>
+
+				<div id="graphTypeImages">					
+					<img class="graphimg selected" id = "ScatterPlot" src="img/scatter.png" Title="Scatter Plot">
+					<img class="graphimg" id ="Histogram" src="img/histogram.png" Title="Histogram">
+					<img class="graphimg" id = "PieChart"src="img/pie.png" Title="Pie Chart">
+
+					<img class="graphimg" id="Histograph" src="img/histograph.png" Title="Stacked Chart">
+				</div>
+
+				<br />
+				<h3>Data</h3>
+
+				<div id="graphTypeImages">
+					<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
+					<img class="graphimg selected" id ="Length" src="img/length.png" Title="Length">
+					<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
+					<img class="graphimg" id = "ReadingLevel"src="img/reading.png" Title="Grade Level">
+					<img class="graphimg" id = "Hourly"src="img/hour.png" Title="Hourly"  height="55" width = "55">
+					<img class="graphimg" id = "Weekly"src="img/week.png" Title="Weekly"  height="55" width = "55">
+				</div>
+
+			</div>
+			<div id="Filters">
+				<h3>Filters</h3>
+				<div id = "sliders">
+					<span class="filter">Karma: <span id="karmaRange"></span></span> 
+					<div id="karmaSlider" class = "slider"></div>
+				<br />
+					<span class="filter">Length: <span id="lengthRange"></span></span> 
+					<div id="lengthSlider"class = "slider"></div>
+				<br />
+					<span class="filter">Date: <span id="dateRange"></span></span> 
+					<div id="dateSlider" class = "slider"></div>
+				</div>
+			</div>	
+			<div id="subrestrictions">
+				<h3>Subreddit Filter</h3>
+				<div id='radio'>
+					<input id = "requireSubs" name="radioReddits" type="radio" value="true"/>Require &nbsp
+					<input id = "prohibtSubs" name="radioReddits" type="radio" value="false" checked/>Prohibit
+				</div>
+				<input id="requiredReddits" />
+				Seperate each with a space
+			</div>
+
+
+			<div id="user">
+				<h3>User Name</h3>
+
+				<form id="userNameForm2" onsubmit="return updateGraph();">
+					<input id="secoundTextBox"/> 
+					<input type="button" value="Update" onclick="updateGraph();"/>
+				</form>
+
+			</div>
+			<br />
+			<div id="updateInfo">
+				<span id="info2"></span>
+			</div>
+			<br />
+
 		</div>
-	</div>	
-	<div id="subrestrictions">
-		<h3>Subreddit Filter</h3>
-		<div id='radio'>
-			<input id = "requireSubs" name="radioReddits" type="radio" value="true"/>Require &nbsp
-			<input id = "prohibtSubs" name="radioReddits" type="radio" value="false" checked/>Prohibit
+		 
+		<div id="graphContainer" class="hidden">	
+			<h1 id="graphTitle"></h1>	
+			<div id="graph" style="width:600px;height:600px" ></div>
+			<div id="legend"></div>
+
 		</div>
-		<input id="requiredReddits" />
-		Seperate each with a space
-	</div>
 
-
-	<div id="user">
-		<h3>User Name</h3>
-		<input id="secoundTextBox" value = "" /> 	
-		<input type="button" value="Update Graph" onclick="updateGraph();"/>
-	</div>
-	<br />
-	<span id="info2"></span>
-	<br />
-	<br />
-	<a href="http://www.roadtolarissa.com/reddit-comment-visualizer/">About</a>
-	<br />
-	<br />
-</div>
- 
-<div id="graphContainer" class="hidden">	
-	<h1 id="graphTitle"></h1>	
-	<div id="graph" style="width:600px;height:600px" ></div>
-	<div id="legend"></div>
-
-</div>
-
-<div id="commentTextContainer" class="hidden">
-	<div id="scatterDetails" class="detail">
-		<h2>Comment Details</h2>
-		<h4>Subreddit: </h4><span id="cSubreddit"> </span><br />
-		<h4>Posted: </h4><span id="cPosted"></span><br />
-		<h4>Karma: </h4><span id="cKarma"></span><br />
-		<h4>Thread Title: </h4><span id="cThreadTitle"></span><br /><br />
-		<h4>Text: </h4><br /><span id="cText"></span><br />
-	</div>
-	<div id="pieDetails" class="detail">		
-		<h2>Details</h2>
-		<h4>Subreddit: </h4><span id="pSubreddit"> </span><br />
-		<h4>First Post: </h4><span id="pFirst"></span><br />
-		<h4>Last Post: </h4><span id="pLast"></span><br />
-		<h4>Total Posts: </h4><span id="pTPost"></span><br />
-		<h4>Total Karma: </h4><span id="pTKarma"></span><br />
-		<h4>Total Characters: </h4><span id="pTChar"></span><br />
-		<h4>Karma per Post: </h4><span id="pKarmaPerPost"></span><br />
-		<h4>Characters per Post: </h4><span id="pCharPerPost"></span><br />
-</div>
-
+		<div id="commentTextContainer" class="hidden">
+			<div id="scatterDetails" class="detail">
+				<h2>Comment Details</h2>
+				<h4>Subreddit: </h4><span id="cSubreddit"> </span><br />
+				<h4>Posted: </h4><span id="cPosted"></span><br />
+				<h4>Karma: </h4><span id="cKarma"></span><br />
+				<h4>Grade Level: </h4><span id="cReadingLevel"></span><br />
+				<h4>Thread Title: </h4><span id="cThreadTitle"></span><br /><br />
+				<h4>Text: </h4><br /><span id="cText"></span><br />
+			</div>
+			<div id="pieDetails" class="detail">		
+				<h2>Details</h2>
+				<h4>Subreddit: </h4><span id="pSubreddit"> </span><br />
+				<h4>First Post: </h4><span id="pFirst"></span><br />
+				<h4>Last Post: </h4><span id="pLast"></span><br />
+				<h4>Total Posts: </h4><span id="pTPost"></span><br />
+				<h4>Total Karma: </h4><span id="pTKarma"></span><br />
+				<h4>Total Characters: </h4><span id="pTChar"></span><br />
+				<h4>Karma per Post: </h4><span id="pKarmaPerPost"></span><br />
+				<h4>Characters per Post: </h4><span id="pCharPerPost"></span><br />
+				<h4>Adverage Grade Level: </h4><span id="pReadingLevelPerPost"></span><br />
+			</div>
 
 </body>​	
 
-<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
 
 <script src="flot/jquery.flot.js"></script>
 <script src="flot/jquery.flot.time.js"></script>
@@ -118,7 +133,9 @@
 
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
 
- <script type="text/javascript" src="scatterplot.js"></script>
- <script type="text/javascript" src="simple.js"></script>
+ <script type="text/javascript" src="plot.js"></script>
+ <script type="text/javascript" src="read.js"></script>
+
+ <script type="text/javascript" src="wrapper.js"></script>
 
 </html>
