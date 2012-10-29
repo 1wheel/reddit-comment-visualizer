@@ -180,3 +180,18 @@ a{
 .filter{
 	white-space:nowrap;
 }
+
+#diolog{
+	visibility:hidden;
+}
+
+#faq{
+	display:none;
+	font-family: Helvetica;
+	font-size: .8em;
+}
+
+.q{
+	font-size: 1em !important;
+	font-weight: bold;
+}

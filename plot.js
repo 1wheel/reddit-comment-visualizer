@@ -1,5 +1,5 @@
 //this function is called to create a graph; it is a bit of a mess right now
-function CreateCurrentPlot(x, y, type){
+function CreateCurrentPlot(x, y, type, log, sub){
 	console.log("updating plot");
 	this.type = type;
 	this.points = [];							//points to graph
@@ -83,13 +83,32 @@ function CreateCurrentPlot(x, y, type){
 	if (y =="ReadingLevel"){
 		y = "Grade Level";
 	}
+	else if(y == "Length"){
+		y = "Length in Characters";
+	}
+	else if (y == "NumberHourly"){
+		y = "per Hour";
+	}
+	else if (y == "NumberWeekly"){
+		y = "per Day of Week";
+	}	
+	else if (y == "Number"){
+		if (!(currentType == "PieChart" || currentType == "Histograph")){
+			y = "per Day";
+		}
+	}
 
 	//scatter plot spefic code here
-	if (this.type=="ScatterPlot"){	
-		this.graphTitle = (y == "Number") ? userName + "'s Average Comments per Day" : userName + "'s Comments: " + y + " v. " +  x;
+	if (this.type=="ScatterPlot"){
+		if (y == "per Day")	{
+			this.graphTitle = userName + "'s Comments " + y + " v. " +  x;
 
-		if (this.dayORweek){
-			this.graphTitle = userName + "'s Average Comments per " + ((currentData == "Hourly") ? "Hour" : "Day of the Week");
+		}
+		else if (this.dayORweek){
+			this.graphTitle = userName + "'s Commenting During a Typical " + ((currentData == "Hourly") ? "Day" : "Week");
+		}
+		else{
+			this.graphTitle = userName + "'s Comments: " + y + " v. " +  x;
 		}
 
 		this.drawGraph = function(){
@@ -104,17 +123,30 @@ function CreateCurrentPlot(x, y, type){
 			}
 
 			xmode = {mode:'time'};
+			ymode = {label: y, labelPos: "high"};
 
-			if(!this.dayORweek){
+
+			if(!this.dayORweek){			
+				if (log){
+					ymin = extremeValues["min" + currentData];
+					console.log(ymin);
+					ymode.transform = function (v) {console.log(Math.pow(v-ymin+1,1/2)); return Math.pow(v-ymin+1,1/2); };
+  					ymode.inverseTransform = function (v) { return Math.exp(v); };
+				}
 				graphData.push({ data: smoother(currentPlot.points, 400, 100), hoverable: false, clickable: false, color: "black"});
 			}
-
-			else if (currentData == "Weekly"){
-				xmode = {ticks: [[,"Sun"],[24*60*60*1000,"Mon"],[2*24*60*60*1000,"Tue"],[3*24*60*60*1000,"Wed"],[4*24*60*60*1000,"Thu"],[5*24*60*60*1000,"Fri"],[6*24*60*60*1000,"Sat"]]}
+			else {
+				ymode: {};
+				if (currentData == "Weekly"){
+					xmode = {ticks: [[,"Sun"],[24*60*60*1000,"Mon"],[2*24*60*60*1000,"Tue"],[3*24*60*60*1000,"Wed"],[4*24*60*60*1000,"Thu"],[5*24*60*60*1000,"Fri"],[6*24*60*60*1000,"Sat"]]
+							, label:"Time", labelPos: "high"}
+				}
 			}
+			console.log(ymode);
 			$.plot($("#graph"), graphData,
 			   { 
-			       xaxes: [ xmode ],
+			       xaxes: [xmode],
+			       yaxes: [ymode],
 			       grid: { hoverable: true, clickable: true},
 			       legend: {noColumns:3, container:$("#legend")}
 			   });
@@ -184,12 +216,12 @@ function CreateCurrentPlot(x, y, type){
 	}
 
 	if (this.type == "Histogram"){
-		this.graphTitle = (y == "Number") ? 
-			"Histogram of " + userName + "'s Adverage Comments per Day" : 
+		this.graphTitle = (y == "per Day") ? 
+			"Histogram of " + userName + "'s Average Comments per Day" : 
 			"Histogram of the " + y + " of " + userName + "'s Comments";
 
 		if (this.dayORweek){
-			this.graphTitle = userName + "'s Average Comments per " + ((currentData == "Hourly") ? "Hour" : "Day of the Week");
+			this.graphTitle = "Histogram of " + userName + "'s Average Comments " + y;
 		}
 
 		//creates histograph ready data
@@ -231,7 +263,8 @@ function CreateCurrentPlot(x, y, type){
 		this.drawGraph = function(){
 			setGraphWidth();	 		
 
-			var xmode = (currentPlot.dayORweek) ? {mode:'time'} : {};
+			var xmode = (currentPlot.dayORweek) ? {mode:'time'} : {label:y, labelPos:"high"};
+			var ymode = {label: "Frequency", labelPos: "high"};
 			if (currentData == "Weekly"){
 				xmode = {ticks: [[0,"Sun"],[24*60*60*1000,"Mon"],[2*24*60*60*1000,"Tue"],[3*24*60*60*1000,"Wed"],[4*24*60*60*1000,"Thu"],[5*24*60*60*1000,"Fri"],[6*24*60*60*1000,"Sat"]]}
 			}
@@ -239,6 +272,7 @@ function CreateCurrentPlot(x, y, type){
 			$.plot($("#graph"), graphData,
 			   { 
 			   		xaxes: [ xmode ],
+			   		yaxes: [ymode],
 			   		series: {
 			   			stack: true,
 			   			bars: {show:true, barWidth :.6*currentPlot.stepSize, lineWidth:0,
@@ -280,7 +314,7 @@ function CreateCurrentPlot(x, y, type){
 	}
 
 	if (this.type == "Histograph"){
-		this.graphTitle = "Histograph of the total " + y + " of " + userName + "'s Comments";
+		this.graphTitle = "Histograph of the Total " + y + " of " + userName + "'s Comments";
 		var max = -10000;
 		var min = 1000000000000000000000000000;
 		for (var i = 0; i < this.points.length; i++){
@@ -340,6 +374,7 @@ function CreateCurrentPlot(x, y, type){
 
 		this.stepSize = stepSize;
 
+		ymode = {label: "Percentage", labelPos: "high"};
 		this.drawGraph = function(){
 			setGraphWidth();	 		
 
@@ -353,6 +388,7 @@ function CreateCurrentPlot(x, y, type){
 						}
 			   		},
 			   		xaxes: [ { mode: 'time' } ],
+			   		yaxes: [ymode],
 			       grid: { hoverable: true, clickable: false},
 			       legend: {noColumns:3, container:$("#legend")
 			   }})
@@ -704,3 +740,10 @@ function findExtremeValues(array){
 	}
 	return rv;
 }
+
+// var re = /gawker/;
+// for (var i = 0; i < rawCommentArray.length; i++){
+// 	if(re.test(rawCommentArray[i].body)){
+// 		console.log(rawCommentArray[i]);
+// 	}
+// }

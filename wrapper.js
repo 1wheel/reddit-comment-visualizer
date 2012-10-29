@@ -7,7 +7,10 @@ var graphDisplayed = false;
 var extremeValues = {};
 
 var currentType = "ScatterPlot";
-var currentData = "Length";
+var currentData = "Hourly";
+disableImg("#PieChart");
+disableImg("#Histograph");
+
 
 var currentlyUpdating = false;
 var updateAgain = false;
@@ -15,20 +18,30 @@ var lastSlide = 0;
 
 var rx = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/
 
-
 //formats and starts a query is one isn't currently running
 function startQuery(){
 	updateInfo("starting query");
-	if (!currentlyQuerying){
+	if (!currentlyQuerying){		
+
 		currentPlot = null;
-		currentlyQuerying = true;
 		rawCommentArray = [];
+
 		userName = graphDisplayed ? $("#secoundTextBox").val() : $("#firstTextBox").val();
-		updateInfo("trying history.pushState");
-		history.pushState({}, userName + "'s redditgraphs", window.location.pathname+"?"+userName);
-		updateInfo("history.pushState worked");
-		queryURL = 'http://www.reddit.com/user/' + userName + '/comments/.json?jsonp=?&limit=100&';
-		queryReddit("", 0);
+		var savedInfo = localStorage[userName];
+		if (savedInfo && JSON.parse(savedInfo).time + 30*60*1000 > Date.now()){
+			rawCommentArray = JSON.parse(savedInfo).rawCommentArray;
+			updateInfo("Cached Comments Loaded");
+			if (!graphDisplayed){
+				displayGraph();
+			}
+			createSliders();
+			updateGraph();
+		}
+		else {	
+			currentlyQuerying = true;
+			queryURL = 'http://www.reddit.com/user/' + userName + '/comments/.json?jsonp=?&limit=100&';
+			queryReddit("", 0);
+		}
 	}
 	else {
 		console.log("can't run two querys at once");
@@ -55,6 +68,7 @@ function queryReddit(after, count){
 
 //called after every batch of comments is downloaded; calls queryReddit if there are more comments
 function logResult( result, count){
+	console.log(result);
 	if (count == 0 && result.data.children.length == 0){
 		updateInfo("User has no comment history - try another name");
 		currentlyQuerying = false;
@@ -63,23 +77,30 @@ function logResult( result, count){
 	if (!graphDisplayed){
 		displayGraph();
 	}
+
 	for (var i = 0; i < result.data.children.length; i++){
 		rawCommentArray.push(result.data.children[i].data);
 		rawCommentArray[rawCommentArray.length-1].Length = commentLength(rawCommentArray[rawCommentArray.length-1].body);
 		rawCommentArray[rawCommentArray.length-1].ReadingLevel = commentReadingLevel(rawCommentArray[rawCommentArray.length-1].body);
 	}
 
-	extremeValues = findExtremeValues(rawCommentArray);
-	createSlider("#karma", function(x){return x;}, extremeValues.minKarma, extremeValues.maxKarma);
-	createSlider("#length", function(x){return x;}, extremeValues.minLength, extremeValues.maxLength);
-	createSlider("#date", intToDateStr, extremeValues.minDate, extremeValues.maxDate);
-
 	updateInfo(count + " comments found");
+
+	createSliders();
 
 	if (result.data.after && count<40000){
 		queryReddit(result.data.after, count+100);
 	}
 	else {
+		try{
+			localStorage.removeItem(userName);
+			localStorage[userName] = JSON.stringify({time:Date.now(), rawCommentArray: rawCommentArray});
+			console.log("successful save");
+		}
+		catch(e){
+			console.log(e);
+			localStorage.clear();
+		}
 		currentlyQuerying = false;
 	}
 
@@ -93,13 +114,17 @@ function updateGraph(){
 		startQuery();
 	}
 	else if (rawCommentArray.length == 0){
-		updateInfo("No info to graph - try another user name");
+		console.log("No user info");
 	}
 	else{
 		currentlyUpdating = true;
+		var URLsearch = "?"+userName+"&"+currentType+"&"+currentData;
+		if (URLsearch != window.location.search){
+			history.pushState({}, userName + "'s redditgraphs",window.location.pathname + URLsearch);
+		}
 		updateAgain - false;
 		currentPlot = {};
-		currentPlot = new CreateCurrentPlot("Time", currentData,currentType);
+		currentPlot = new CreateCurrentPlot("Time", currentData, currentType, true, false);
 		currentPlot.drawGraph();
 		resizeElements();	
 		if(!currentlyQuerying){
@@ -113,6 +138,13 @@ function updateGraph(){
 		}
 		currentlyUpdating = false;
 	}
+}
+
+function createSliders(){
+	extremeValues = findExtremeValues(rawCommentArray);
+	createSlider("#karma", function(x){return x;}, extremeValues.minKarma, extremeValues.maxKarma);
+	createSlider("#length", function(x){return x;}, extremeValues.minLength, extremeValues.maxLength);
+	createSlider("#date", intToDateStr, extremeValues.minDate, extremeValues.maxDate);
 }
 
 //called first time query is successful; shows graph and settings while hidding the initial title
@@ -164,6 +196,7 @@ function createSlider(name, prnt, min, max){
         min: min,
         max: max,
         values: [min, max],
+        step: 1,
         slide: function( event, ui ) {
             $(name+"Range").text(" " + prnt(ui.values[0]) + " to " + prnt(ui.values[1]));
             updateSliderQueue();
@@ -187,7 +220,7 @@ function enableImg(id){
 	$(id).addClass("graphimg");	
 }
 
-function changeSelectedType(newType){
+function changeSelectedType(newType, redraw){
 	console.log(newType);
 	$("#" + currentType).removeClass("selected");	
 	$("#" + newType).addClass("selected");
@@ -201,15 +234,17 @@ function changeSelectedType(newType){
 		enableImg("#Hourly");
 		enableImg("#Weekly");
 	}
-	updateGraphQueue();
+	if (redraw){
+		updateGraphQueue();
+	}
 }
 
-$("#ScatterPlot").click(function(){changeSelectedType("ScatterPlot");});
-$("#PieChart").click(function(){changeSelectedType("PieChart");});
-$("#Histograph").click(function(){changeSelectedType("Histograph");});
-$("#Histogram").click(function(){changeSelectedType("Histogram");});
+$("#ScatterPlot").click(function(){changeSelectedType("ScatterPlot",true);});
+$("#PieChart").click(function(){changeSelectedType("PieChart",true);});
+$("#Histograph").click(function(){changeSelectedType("Histograph",true);});
+$("#Histogram").click(function(){changeSelectedType("Histogram",true);});
 
-function changeSelectedData(newData){
+function changeSelectedData(newData, redraw){
 	console.log(newData);
 	$("#" + currentData).removeClass("selected");	
 	$("#" + newData).addClass("selected");
@@ -224,14 +259,17 @@ function changeSelectedData(newData){
 		enableImg("#PieChart");
 		enableImg("#Histograph");
 	}
+	if (redraw){
+		updateGraphQueue();
+	}
 }
 
-$("#Karma").click(function(){changeSelectedData("Karma");});
-$("#Length").click(function(){changeSelectedData("Length");});
-$("#Number").click(function(){changeSelectedData("Number");});
-$("#ReadingLevel").click(function(){changeSelectedData("ReadingLevel");});
-$("#Hourly").click(function(){changeSelectedData("Hourly");});
-$("#Weekly").click(function(){changeSelectedData("Weekly");});
+$("#Karma").click(function(){changeSelectedData("Karma",true);});
+$("#Length").click(function(){changeSelectedData("Length",true);});
+$("#Number").click(function(){changeSelectedData("Number",true);});
+$("#ReadingLevel").click(function(){changeSelectedData("ReadingLevel",true);});
+$("#Hourly").click(function(){changeSelectedData("Hourly",true);});
+$("#Weekly").click(function(){changeSelectedData("Weekly",true);});
 
 function updateGraphQueue(){
 	//if ($("#"+currentData).hasClass("graphimg") 
@@ -252,7 +290,7 @@ function updateSliderQueue(){
 function checkSliderRefesh(){
 	var currentTime = new Date().getTime();
 	if (80 < currentTime - lastSlide) {
-		console.log("sliiide");
+		console.log("slider update allowed");
 		updateGraphQueue();
 	}
 	else{
@@ -267,9 +305,60 @@ window.onpopstate = function(event){
 
 window.onload = function(){
 	console.log("page loaded");
-	if (window.location.search.substr(1).length>0 && window.location.search.substr(1) != userName){
-		document.getElementById("secoundTextBox").value = window.location.search.substr(1);
-		document.getElementById("firstTextBox").value = window.location.search.substr(1);		
-		startQuery();
+	if (window.location.search.substr(1).length>0){
+		var parameters = window.location.search.substr(1).split("&");
+		var newData = "";
+		var newType = "";
+		var newUserName = "";
+		updateGraphRequired = false;
+		updateUserNameRequired = false;
+
+		//this won't work for usernames that match data or graph types
+		for (var i = 0; i < parameters.length; i++){
+			if ((parameters[i] == "ScatterPlot" || parameters[i] == "Histograph") || (parameters[i] == "PieChart" || parameters[i] == "Histogram")){
+				if (currentType != parameters[i]){
+					changeSelectedType(parameters[i],false);
+					updateGraphRequired = true;
+					console.log(parameters[i]);
+
+				}
+			}
+			else if ((parameters[i] == "Karma" || parameters[i] == "Length") || ((parameters[i] == "Number" || parameters[i] == "ReadingLevel") || (parameters[i] == "Hourly" || parameters[i] == "Weekly"))) {
+				if (currentData != parameters[i]){
+					changeSelectedData(parameters[i],false);
+					updateGraphRequired = true;
+					console.log(parameters[i]);
+				}
+			}
+			else {
+				if (userName != parameters[i]){
+					userName = parameters[i];
+					updateUserNameRequired = true;
+					console.log(parameters[i]);
+				}
+			}  
+		}
+
+		if (updateUserNameRequired){
+			document.getElementById("secoundTextBox").value = userName;
+			document.getElementById("firstTextBox").value = userName;	
+			console.log("query start");
+			setTimeout("startQuery()",100);
+		}
+		else if (updateGraphRequired){
+			console.log("graph updated");
+			updateGraphQueue();
+		}
 	}
+}
+
+function showfaq(){
+	$(function() {
+
+        $( "#faq" ).dialog(
+        	{title: "FAQ",
+        	minWidth:600,
+        	position: [230,70]}
+        );
+    });
 }

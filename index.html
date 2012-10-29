@@ -11,17 +11,19 @@
 			<span id="headerText">
 				<a class= "blacklink" href="http://www.roadtolarissa.com/tag/redditgraphs/">about</a>
 		 		<code>|</code> 
+		 		<a class = "blacklink" href="javascript:showfaq();">faq</a> 
+		 		<code>|</code> 
 		 		<a class= "blacklink" href="https://github.com/1wheel/reddit-comment-visualizer/">github</a>
 		 		<code>|</code> 
-		 		<a class= "blacklink" href="www.reddit.com/r/graphs/">discuss</a>
+		 		<a class= "blacklink" href="http://www.reddit.com/r/offbeat/comments/12514l/your_reddit_comments_show_when_you_sleep/">discuss</a>
 			</span>
 		</div>
 
 		<div id="commentDL">
-			<h1>Download Reddit Comment History</h1>
+			<h1>What is Your Name?</h1>
 			<form id="userNameForm" onsubmit="return startQuery();">
 				<input id="firstTextBox" autofocus placeholder="Enter a Reddit User Name..."/> 
-				<input type="button" value="Download and Graph" onclick="startQuery();"/>
+				<input type="button" value="Graph" onclick="startQuery();"/>
 			</form>
 			<span id="info"></span>
 		</div>
@@ -43,11 +45,11 @@
 
 				<div id="graphTypeImages">
 					<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
-					<img class="graphimg selected" id ="Length" src="img/length.png" Title="Length">
+					<img class="graphimg" id ="Length" src="img/length.png" Title="Length in Characters">
 					<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
 					<img class="graphimg" id = "ReadingLevel"src="img/reading.png" Title="Grade Level">
-					<img class="graphimg" id = "Hourly"src="img/hour.png" Title="Hourly"  height="55" width = "55">
-					<img class="graphimg" id = "Weekly"src="img/week.png" Title="Weekly"  height="55" width = "55">
+					<img class="graphimg selected" id = "Hourly"src="img/hour.png" Title="Daily Trends"  height="55" width = "55">
+					<img class="graphimg" id = "Weekly"src="img/week.png" Title="Weekly Trends"  height="55" width = "55">
 				</div>
 
 			</div>
@@ -119,10 +121,34 @@
 				<h4>Total Characters: </h4><span id="pTChar"></span><br />
 				<h4>Karma per Post: </h4><span id="pKarmaPerPost"></span><br />
 				<h4>Characters per Post: </h4><span id="pCharPerPost"></span><br />
-				<h4>Adverage Grade Level: </h4><span id="pReadingLevelPerPost"></span><br />
-			</div>
+				<h4>Average Grade Level: </h4><span id="pReadingLevelPerPost"></span><br />
+			</div>	
+
+	<div id="faq">
+		<span class='q'>Where are my older comments?</span><br />
+		Unfortunately, <a href="http://www.reddit.com/r/ideasfortheadmins/comments/10tai6/ever_wondered_the_data_liberation_policy_of_reddit/c6gicdf">reddit's API</a> only exposes your  1000 most recent comments - if you'd like to see more, the admins will have to change something on their end. <br /><br />
+
+		<span class='q'>How does the grade level statisitic work? It seems off.</span><br />
+		It uses the <a href="http://en.wikipedia.org/wiki/Coleman-Liau_Index">Coleman-Liau Index</a> to esimate how difficult your comment are to read based on words per sentence and characters per word. It is difficult to count sentences and word length when the input isn't sanitized - URLs and LOLOLOLOLs increase the grade level way too much - so to make the output appear more reasonable, I cheat and use <a href="http://en.wikipedia.org/wiki/Sigmoid_function">sigmoidal functions</a> to force the reading level between 0 and 20.<br /><br />
+
+		<span class='q'>Can I graph karma v. comment length?</span><br />
+		I looked a few people's profiles and wasn't able to see much a correlation between the two. This could be because each of them had a small number of comments with a very high amount of karma. One of the main difficulties with this type of display that has many moving parts and combinations is leading the user the -most- interesting graphs to look at. To facilitate that, I removed several potentially interesting things from the <a href="http://www.roadtolarissa.com/wp-content/uploads/2012/10/scatter-plot-screen-shot.png">old UI</a> . 
+		I do think there is a relationship between length and karma; I'm planning downloading more information, analysing it, and posting about it.<br /><br />
+
+		<span class='q'>Why isn't the y-axis log scaled?</span><br />
+		I'm having some trouble getting the scaling to work with mouse hovering - once I get it working I'll update this page.<br /><br />		
+
+		<span class='q'>Is there any way to download my comments?</span><br />
+		There isn't anyway to do it in the current UI, but you can copy/paste them from the console. Open the <a href="http://webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers">console on your browser</a>, paste JSON.stringify(rawCommentArray) and press enter.<br /><br />
+
+		<span class='q'>This faq didn't answer one of my questions! What do I do now?</span><br />
+		Click on the discuss link - I'll keep it pointing the most recent thread on reddit - or send an email to adam.r.pearce@gmail.com<br /><br />
+	</div>
+
 
 </body>​	
+
+
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
