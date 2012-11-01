@@ -74,11 +74,53 @@ a{
     float: left;
     width: 215px;
     overflow:hidden;
+    position:relative;
 }
 
 #graphTypeImages {
   border: 0px solid #000000;
   column-count:2;
+}
+
+.imgBox{
+	height:55px;
+	width:55px;
+	display:inline;
+	position:relative;
+}
+
+.logBox{
+	width:50px;
+	display:inline;
+}
+
+.logButton{
+	top:-8px;
+	left:10px;
+	z-index: 1;
+	font-size: 110;
+	position: absolute !important;
+
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.ui-button .ui-button-text
+{
+ 	padding: 0px 11px 0px 13px !important;
+  	font-size: .72em !important;
+  	opacity: .7;
+}
+
+.ui-state-active { 
+	background: #abcff2 !important; 
+}
+
+#commentsRadio{
+	font-size:1.06em;
+	margin-left: 5px
 }
 
 .graphimg{
@@ -93,6 +135,10 @@ a{
 	-webkit-box-shadow: 1px 1px 5px #999;
     box-shadow: 1px 1px 5px #999;
     opacity:1;
+}
+
+.hiddenButton{
+	visibility: hidden;
 }
 
 .disabledgraphimg{

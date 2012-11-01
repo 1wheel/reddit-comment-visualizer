@@ -8,9 +8,12 @@ var extremeValues = {};
 
 var currentType = "ScatterPlot";
 var currentData = "Hourly";
+var karmaLog = false;
+var lengthLog = false;
+var comments = true;
+var commentsQueried;
 disableImg("#PieChart");
 disableImg("#Histograph");
-
 
 var currentlyUpdating = false;
 var updateAgain = false;
@@ -25,9 +28,11 @@ function startQuery(){
 
 		currentPlot = null;
 		rawCommentArray = [];
+		commentsQueried = comments;
 
 		userName = graphDisplayed ? $("#secoundTextBox").val() : $("#firstTextBox").val();
-		var savedInfo = localStorage[userName];
+		var savedInfo = localStorage[userName+commentsQueried];
+
 		if (savedInfo && JSON.parse(savedInfo).time + 30*60*1000 > Date.now()){
 			rawCommentArray = JSON.parse(savedInfo).rawCommentArray;
 			updateInfo("Cached Comments Loaded");
@@ -39,7 +44,8 @@ function startQuery(){
 		}
 		else {	
 			currentlyQuerying = true;
-			queryURL = 'http://www.reddit.com/user/' + userName + '/comments/.json?jsonp=?&limit=100&';
+			queryURL = 'http://www.reddit.com/user/' + userName + '/'+ (commentsQueried ? 'comments' : 'submitted')
+						+ '/.json?jsonp=?&limit=100&';
 			queryReddit("", 0);
 		}
 	}
@@ -80,6 +86,15 @@ function logResult( result, count){
 
 	for (var i = 0; i < result.data.children.length; i++){
 		rawCommentArray.push(result.data.children[i].data);
+		if (!commentsQueried){
+			rawCommentArray[rawCommentArray.length-1].body = rawCommentArray[rawCommentArray.length-1].title;
+			if(rawCommentArray[rawCommentArray.length-1].selftext.length>0){
+
+			}
+			rawCommentArray[rawCommentArray.length-1].body_html = (rawCommentArray[rawCommentArray.length-1].selftext.length>0) ?
+			rawCommentArray[rawCommentArray.length-1].selftext_html : rawCommentArray[rawCommentArray.length-1].url;
+			rawCommentArray[rawCommentArray.length-1].link_title = rawCommentArray[rawCommentArray.length-1].title;
+		}
 		rawCommentArray[rawCommentArray.length-1].Length = commentLength(rawCommentArray[rawCommentArray.length-1].body);
 		rawCommentArray[rawCommentArray.length-1].ReadingLevel = commentReadingLevel(rawCommentArray[rawCommentArray.length-1].body);
 	}
@@ -93,8 +108,9 @@ function logResult( result, count){
 	}
 	else {
 		try{
-			localStorage.removeItem(userName);
-			localStorage[userName] = JSON.stringify({time:Date.now(), rawCommentArray: rawCommentArray});
+			localStorage.removeItem(userName+commentsQueried);
+			console.log(userName+commentsQueried);
+			localStorage[userName+commentsQueried] = JSON.stringify({time:Date.now(), rawCommentArray: rawCommentArray});
 			console.log("successful save");
 		}
 		catch(e){
@@ -109,8 +125,8 @@ function logResult( result, count){
 
 //formats and graphs raw data from reddit
 function updateGraph(){
-	if (userName != $("#secoundTextBox").val()){
-		console.log("CurrentPlot exists and user names do not match");
+	if (userName != $("#secoundTextBox").val()  || comments != commentsQueried){
+		console.log("CurrentPlot exists and user names or data type do not match");
 		startQuery();
 	}
 	else if (rawCommentArray.length == 0){
@@ -124,7 +140,7 @@ function updateGraph(){
 		}
 		updateAgain - false;
 		currentPlot = {};
-		currentPlot = new CreateCurrentPlot("Time", currentData, currentType, true, false);
+		currentPlot = new CreateCurrentPlot("Time", currentData, currentType, checkLog(), commentsQueried);
 		currentPlot.drawGraph();
 		resizeElements();	
 		if(!currentlyQuerying){
@@ -220,6 +236,42 @@ function enableImg(id){
 	$(id).addClass("graphimg");	
 }
 
+$("#logKarma").button();
+$("#logKarma").click(function(){
+								karmaLog = !karmaLog;
+								updateGraphQueue();});
+
+$("#logLength").button();
+$("#logLength").click(function(){
+								lengthLog = !lengthLog;
+								updateGraphQueue();});
+
+$("#commentsRadio").buttonset();
+$("#commentsRadio").click(function(){
+								comments = document.getElementById("radio1").checked;
+								updateGraphQueue();});
+
+function fixLogButtons(){		
+	$("#LengthLogBox").hide();
+	$("#KarmaLogBox").hide();
+
+	if (currentType == "ScatterPlot" || currentType == "Histogram"){
+		if (currentData == "Karma"){
+			$("#KarmaLogBox").show();
+		}
+		if (currentData == "Length"){
+			$("#LengthLogBox").show();
+		}
+	}
+}
+
+function checkLog () {
+	if (currentType == "ScatterPlot" || currentType == "Histogram"){
+		return ((currentData=="Karma" && karmaLog)||(currentData=="Length"&&lengthLog))
+	}
+	return false;
+}
+
 function changeSelectedType(newType, redraw){
 	console.log(newType);
 	$("#" + currentType).removeClass("selected");	
@@ -237,6 +289,7 @@ function changeSelectedType(newType, redraw){
 	if (redraw){
 		updateGraphQueue();
 	}
+	fixLogButtons();
 }
 
 $("#ScatterPlot").click(function(){changeSelectedType("ScatterPlot",true);});
@@ -262,6 +315,7 @@ function changeSelectedData(newData, redraw){
 	if (redraw){
 		updateGraphQueue();
 	}
+	fixLogButtons();
 }
 
 $("#Karma").click(function(){changeSelectedData("Karma",true);});
@@ -330,6 +384,7 @@ window.onload = function(){
 					console.log(parameters[i]);
 				}
 			}
+			//else if (parameters[i] == "Comments" || parameters[i] == "Submissions"){}
 			else {
 				if (userName != parameters[i]){
 					userName = parameters[i];

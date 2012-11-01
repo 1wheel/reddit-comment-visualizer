@@ -32,7 +32,7 @@
 			<div id="graphTypeSelects">
 				<h3>Type</h3>
 
-				<div id="graphTypeImages">					
+				<div id="graphTypeImages">	
 					<img class="graphimg selected" id = "ScatterPlot" src="img/scatter.png" Title="Scatter Plot">
 					<img class="graphimg" id ="Histogram" src="img/histogram.png" Title="Histogram">
 					<img class="graphimg" id = "PieChart"src="img/pie.png" Title="Pie Chart">
@@ -44,15 +44,37 @@
 				<h3>Data</h3>
 
 				<div id="graphTypeImages">
-					<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
-					<img class="graphimg" id ="Length" src="img/length.png" Title="Length in Characters">
+
+					<div class="imgBox">
+						<div id="KarmaLogBox" class="logBox">						
+							<input type="checkbox" id="logKarma" class = "logButton"/>
+								<label class = "logButton" for="logKarma">log</label>	
+						</div>	
+						<img class="graphimg" id="Karma" src="img/karma.png" Title="Karma">
+					</div>
+
+					<div class="imgBox">							
+						<div id="LengthLogBox" class="logBox">						
+							<input type="checkbox" id="logLength" class = "logButton"/>
+								<label class = "logButton" for="logLength">log</label>	
+						</div>	
+						<img class="graphimg" id ="Length" src="img/length.png" Title="Length in Characters">
+					</div>
+
 					<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
 					<img class="graphimg" id = "ReadingLevel"src="img/reading.png" Title="Grade Level">
 					<img class="graphimg selected" id = "Hourly"src="img/hour.png" Title="Daily Trends"  height="55" width = "55">
 					<img class="graphimg" id = "Weekly"src="img/week.png" Title="Weekly Trends"  height="55" width = "55">
 				</div>
 
+				<div id="commentsRadio">
+      				<input type="radio" id="radio1" name="radio" value="Comments" checked="checked"/><label for="radio1">Comments</label>
+     				<input type="radio" id="radio2" name="radio" value="Submissions" /><label for="radio2">Submissions</label>
+        		</div>
+
+
 			</div>
+
 			<div id="Filters">
 				<h3>Filters</h3>
 				<div id = "sliders">
@@ -66,6 +88,7 @@
 					<div id="dateSlider" class = "slider"></div>
 				</div>
 			</div>	
+
 			<div id="subrestrictions">
 				<h3>Subreddit Filter</h3>
 				<div id='radio'>
@@ -134,9 +157,6 @@
 		<span class='q'>Can I graph karma v. comment length?</span><br />
 		I looked a few people's profiles and wasn't able to see much a correlation between the two. This could be because each of them had a small number of comments with a very high amount of karma. One of the main difficulties with this type of display that has many moving parts and combinations is leading the user the -most- interesting graphs to look at. To facilitate that, I removed several potentially interesting things from the <a href="http://www.roadtolarissa.com/wp-content/uploads/2012/10/scatter-plot-screen-shot.png">old UI</a> . 
 		I do think there is a relationship between length and karma; I'm planning downloading more information, analysing it, and posting about it.<br /><br />
-
-		<span class='q'>Why isn't the y-axis log scaled?</span><br />
-		I'm having some trouble getting the scaling to work with mouse hovering - once I get it working I'll update this page.<br /><br />		
 
 		<span class='q'>Is there any way to download my comments?</span><br />
 		There isn't anyway to do it in the current UI, but you can copy/paste them from the console. Open the <a href="http://webmasters.stackexchange.com/questions/8525/how-to-open-the-javascript-console-in-different-browsers">console on your browser</a>, paste JSON.stringify(rawCommentArray) and press enter.<br /><br />

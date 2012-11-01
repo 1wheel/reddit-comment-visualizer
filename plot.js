@@ -24,6 +24,10 @@ function CreateCurrentPlot(x, y, type, log, sub){
 		}
 	}
 
+	if (this.dayORweek || y == "ReadingLevel" || y == "Number"){
+		log = false;
+	}
+
 	//finds all comments that match filter
 	var cSubreddit;
 	for (var i = 0; i < rawCommentArray.length; i++){	
@@ -101,14 +105,14 @@ function CreateCurrentPlot(x, y, type, log, sub){
 	//scatter plot spefic code here
 	if (this.type=="ScatterPlot"){
 		if (y == "per Day")	{
-			this.graphTitle = userName + "'s Comments " + y + " v. " +  x;
+			this.graphTitle = userName + "'s " + comORsub() + " " + y + " v. " +  x;
 
 		}
 		else if (this.dayORweek){
 			this.graphTitle = userName + "'s Commenting During a Typical " + ((currentData == "Hourly") ? "Day" : "Week");
 		}
 		else{
-			this.graphTitle = userName + "'s Comments: " + y + " v. " +  x;
+			this.graphTitle = userName + "'s " + comORsub() + ": " + y + " v. " +  x;
 		}
 
 		this.drawGraph = function(){
@@ -126,15 +130,28 @@ function CreateCurrentPlot(x, y, type, log, sub){
 			ymode = {label: y, labelPos: "high"};
 
 
-			if(!this.dayORweek){			
-				if (log){
+			if(!this.dayORweek) {			
+				if (log && !(currentData=="ReadingLevel"||currentData=="Number")){
 					ymin = extremeValues["min" + currentData];
 					console.log(ymin);
-					ymode.transform = function (v) {console.log(Math.pow(v-ymin+1,1/2)); return Math.pow(v-ymin+1,1/2); };
-  					ymode.inverseTransform = function (v) { return Math.exp(v); };
+					ymode.transform = function (v) {
+													var val = Math.log(v-ymin+1);
+													if (v == 0){
+														return 0;
+													}
+													else if (v < 0){
+														return (-Math.log(-v));
+													}
+													else {
+														return Math.log(v);
+													}
+												};
+  					ymode.inverseTransform = function (v) { return Math.pow(v,2); };
+  					ymode.min = ymin;
 				}
 				graphData.push({ data: smoother(currentPlot.points, 400, 100), hoverable: false, clickable: false, color: "black"});
 			}
+
 			else {
 				ymode: {};
 				if (currentData == "Weekly"){
@@ -142,7 +159,7 @@ function CreateCurrentPlot(x, y, type, log, sub){
 							, label:"Time", labelPos: "high"}
 				}
 			}
-			console.log(ymode);
+
 			$.plot($("#graph"), graphData,
 			   { 
 			       xaxes: [xmode],
@@ -170,7 +187,7 @@ function CreateCurrentPlot(x, y, type, log, sub){
 	}
 
 	if (this.type == "PieChart"){		
-		this.graphTitle = y + " of " + userName + "'s Comments by Subreddit";
+		this.graphTitle = y + " of " + userName + "'s " + comORsub() + " by Subreddit";
 
 		// if (currentData == "ReadingLevel"){
 		// 	for (var i = 0; i < this.subredditSums.length; i++)	{
@@ -217,11 +234,11 @@ function CreateCurrentPlot(x, y, type, log, sub){
 
 	if (this.type == "Histogram"){
 		this.graphTitle = (y == "per Day") ? 
-			"Histogram of " + userName + "'s Average Comments per Day" : 
-			"Histogram of the " + y + " of " + userName + "'s Comments";
+			"Histogram of " + userName + "'s Average " + comORsub() + " per Day" : 
+			"Histogram of the " + y + " of " + userName + "'s "  + comORsub();
 
 		if (this.dayORweek){
-			this.graphTitle = "Histogram of " + userName + "'s Average Comments " + y;
+			this.graphTitle = "Histogram of " + userName + "'s Average " + comORsub() + " " + y;
 		}
 
 		//creates histograph ready data
@@ -239,6 +256,12 @@ function CreateCurrentPlot(x, y, type, log, sub){
 		if (currentData == "Weekly"){
 			stepSize = 1000*60*60*24;
 		}		
+		if (log){
+			stepSize = 1;
+		}
+		var savedStepSize = stepSize;
+		this.histTicks = [];
+
 		graphData = [];
 		this.histLookup = {};
 		for (var i = 0; i < this.subredditSums.length; i++){
@@ -246,8 +269,24 @@ function CreateCurrentPlot(x, y, type, log, sub){
 			var bucket = [];
 			var bucketIndex = 0;
 			this.histLookup[sub] = [];
+			stepSize = savedStepSize;
+
 			for (var j = min; j <= max; j += stepSize){
-				bucket[bucketIndex] = [j, 0];
+				if (log){
+					stepSize = stepInc(j);
+				//	console.log(stepSize + " " + j);
+				}
+				if (log){
+					if (typeof this.histTicks[bucketIndex] ==="undefined"){
+						if (j==-100 || j== -10 || j == -1 || j == 1 || j == 10 || j == 100 || j == 1000){
+							this.histTicks[bucketIndex] = [bucketIndex, j];
+						}
+					}				
+					bucket[bucketIndex] = [bucketIndex, 0];
+				}
+				else{
+					bucket[bucketIndex] = [j, 0];
+				}
 				this.histLookup[sub][bucketIndex] = [];
 				for (var k = 0; k < this.subredditPoints[sub].length; k++){
 					if (j <= this.subredditPoints[sub][k][1] && this.subredditPoints[sub][k][1] < j + stepSize){
@@ -259,7 +298,7 @@ function CreateCurrentPlot(x, y, type, log, sub){
 			}
 		 	graphData.push({ data: bucket, label: sub}) ;  		
 		}
-		this.stepSize = stepSize;
+		this.stepSize = savedStepSize;
 		this.drawGraph = function(){
 			setGraphWidth();	 		
 
@@ -267,6 +306,9 @@ function CreateCurrentPlot(x, y, type, log, sub){
 			var ymode = {label: "Frequency", labelPos: "high"};
 			if (currentData == "Weekly"){
 				xmode = {ticks: [[0,"Sun"],[24*60*60*1000,"Mon"],[2*24*60*60*1000,"Tue"],[3*24*60*60*1000,"Wed"],[4*24*60*60*1000,"Thu"],[5*24*60*60*1000,"Fri"],[6*24*60*60*1000,"Sat"]]}
+			}
+			if (log){
+				xmode.ticks = currentPlot.histTicks;
 			}
 
 			$.plot($("#graph"), graphData,
@@ -314,7 +356,7 @@ function CreateCurrentPlot(x, y, type, log, sub){
 	}
 
 	if (this.type == "Histograph"){
-		this.graphTitle = "Histograph of the Total " + y + " of " + userName + "'s Comments";
+		this.graphTitle = "Histograph of the Total " + y + " of " + userName + "'s " + comORsub();
 		var max = -10000;
 		var min = 1000000000000000000000000000;
 		for (var i = 0; i < this.points.length; i++){
@@ -421,6 +463,25 @@ function CreateCurrentPlot(x, y, type, log, sub){
 		});
 		displayCommentDetail(0);
 	}
+}
+
+function stepInc(x){
+	var rv;
+	var neg = (x>0) ? 1 : -1;
+	x = x*neg;
+	if (x<10){
+		rv = 1;
+	}
+	else if (x<100){
+		rv = 10;
+	}
+	else if (x<1000){
+		rv = 100;
+	}
+	else {
+		rv = 1000;
+	}
+	return rv;
 }
 
 function setGraphWidth(){	
@@ -587,15 +648,20 @@ function sumComment(array, dataType){
 
 function generateCommentLink(index){
 	var comment = rawCommentArray[index];
-	var rv = "http://www.reddit.com/r/";
-	rv += comment.subreddit;
-	rv += "/comments/";
-	rv += comment.link_id.substring(3);
-	//rv += "/";
-	//rv += comment.link_title.substring(3);
-	rv += "/threadName/";
-	rv += comment.id;
-	rv += "?context=3";
+	if (commentsQueried){
+		var rv = "http://www.reddit.com/r/";
+		rv += comment.subreddit;
+		rv += "/comments/";
+		rv += comment.link_id.substring(3);
+		//rv += "/";
+		//rv += comment.link_title.substring(3);
+		rv += "/threadName/";
+		rv += comment.id;
+		rv += "?context=3";
+	}
+	else {
+		var rv = "http://www.reddit.com" + comment.permalink;
+	}
 	return rv;
 }
 
@@ -739,6 +805,10 @@ function findExtremeValues(array){
 		rv.maxDate = (rv.maxDate > date) ? rv.maxDate : date;
 	}
 	return rv;
+}
+
+function comORsub(){
+	return (commentsQueried) ? "Comments" : "Submissions"
 }
 
 // var re = /gawker/;
