@@ -134,7 +134,7 @@ function updateGraph(){
 	}
 	else{
 		currentlyUpdating = true;
-		var URLsearch = "?"+userName+"&"+currentType+"&"+currentData;
+		var URLsearch = "?"+userName+"&"+currentType+"&"+currentData+"&"+comORsub();
 		if (URLsearch != window.location.search){
 			history.pushState({}, userName + "'s redditgraphs",window.location.pathname + URLsearch);
 		}
@@ -384,7 +384,13 @@ window.onload = function(){
 					console.log(parameters[i]);
 				}
 			}
-			//else if (parameters[i] == "Comments" || parameters[i] == "Submissions"){}
+			else if (parameters[i] == "Comments" || parameters[i] == "Submissions"){
+				document.getElementById("radio1").checked = (parameters[i] == "Comments");
+				$("#commentsRadio").buttonset();
+				comments = document.getElementById("radio1").checked;
+				updateGraphRequired = true;
+				console.log(parameters[i]);
+			}
 			else {
 				if (userName != parameters[i]){
 					userName = parameters[i];
