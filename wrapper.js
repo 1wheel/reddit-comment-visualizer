@@ -7,13 +7,13 @@ var graphDisplayed = false;
 var extremeValues = {};
 
 var currentType = "ScatterPlot";
-var currentData = "Hourly";
+var currentData = "Length";
 var karmaLog = false;
 var lengthLog = false;
 var comments = true;
 var commentsQueried;
-disableImg("#PieChart");
-disableImg("#Histograph");
+//disableImg("#PieChart");
+//disableImg("#Histograph");
 
 var currentlyUpdating = false;
 var updateAgain = false;
@@ -23,9 +23,8 @@ var rx = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.
 
 //formats and starts a query is one isn't currently running
 function startQuery(){
-	updateInfo("starting query");
 	if (!currentlyQuerying){		
-
+		updateInfo("starting query");
 		currentPlot = null;
 		rawCommentArray = [];
 		commentsQueried = comments;
@@ -50,26 +49,40 @@ function startQuery(){
 		}
 	}
 	else {
-		console.log("can't run two querys at once");
+		updateInfo("Only one query can run at time - wait a secound or reload the page.");
 	}
 }
 
 //looks up next 100 comments
 function queryReddit(after, count){
 	updateInfo("searching reddit...");
-	$.getJSON(queryURL, {
-		'after':after,
-		'count':count
-	}, function(data) {
-		logResult(data, count);
+	$.jsonp({
+		url: queryURL,
+		data:{	'after':after,
+				'count':count},
+		dataType: "jsonp",
+		callbackParameter: "jsoncallback",
+		timeout: 20000,
+		success: function(data) {
+			logResult(data, count);},
+		error: function(XHR, textStatus, errorThrown){
+			updateInfo("Error getting comments: username is not valid or reddit is down. Try another name?");
+			console.log("!!!ERROR MESSAGE!!!");
+			console.log("comments failed to download");
+			console.log(textStatus);
+			console.log(errorThrown);
+			console.log(rawCommentArray);
+			//console.log(XHR);
+			console.log("END OF ERROR MESSAGE");
+			currentlyQuerying = false;}
 	});
 
-	setTimeout(function() {
-		if (rawCommentArray.length == 0 && $("#info").html() == "searching reddit..."){
-		 	updateInfo("No response from reddit - either the username is incorrect or servers are down");
-		 	currentlyQuerying = false;
-		}
-	}, 4000);
+	// setTimeout(function() {
+	// 	if (rawCommentArray.length == 0 && $("#info").html() == "searching reddit..."){
+	// 	 	updateInfo("No response from reddit - either the username is incorrect or servers are down");
+	// 	 	currentlyQuerying = false;
+	// 	}
+	// }, 4000);
 }
 
 //called after every batch of comments is downloaded; calls queryReddit if there are more comments
@@ -78,6 +91,7 @@ function logResult( result, count){
 	if (count == 0 && result.data.children.length == 0){
 		updateInfo("User has no comment history - try another name");
 		currentlyQuerying = false;
+		return;
 	}
 
 	if (!graphDisplayed){
@@ -423,3 +437,5 @@ function showfaq(){
         );
     });
 }
+
+fixLogButtons()
