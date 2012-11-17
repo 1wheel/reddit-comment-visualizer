@@ -109,7 +109,7 @@ function CreateCurrentPlot(x, y, type, log, sub){
 
 		}
 		else if (this.dayORweek){
-			this.graphTitle = userName + "'s Commenting During a Typical " + ((currentData == "Hourly") ? "Day" : "Week");
+			this.graphTitle = userName + "'s " + comORsub() + " During a Typical " + ((currentData == "Hourly") ? "Day" : "Week");
 		}
 		else{
 			this.graphTitle = userName + "'s " + comORsub() + ": " + y + " v. " +  x;
@@ -149,10 +149,9 @@ function CreateCurrentPlot(x, y, type, log, sub){
   					ymode.inverseTransform = function (v) { return Math.pow(v,2); };
   					ymode.min = ymin;
 				}
-				graphData.push({ data: smoother(currentPlot.points, 400, 100), hoverable: false, clickable: false, color: "black"});
 			}
-
 			else {
+				//graphData.push({ data: smoother(currentPlot.points, 400, 100), hoverable: false, clickable: false, color: "black"});
 				ymode: {};
 				if (currentData == "Weekly"){
 					xmode = {ticks: [[,"Sun"],[24*60*60*1000,"Mon"],[2*24*60*60*1000,"Tue"],[3*24*60*60*1000,"Wed"],[4*24*60*60*1000,"Thu"],[5*24*60*60*1000,"Fri"],[6*24*60*60*1000,"Sat"]]
@@ -563,9 +562,9 @@ function findDataPoint (type, i, array, pointArray){
 		case "ReadingLevel"		: return array[i].ReadingLevel;
 		case "Karma"			: return array[i].ups - array[i].downs;
 
-		case "Number"			: return commentNumber(i, pointArray, 604800*1000, 14, false);
-		case "NumberHourly"		: return commentNumber(i, pointArray, 60*60*1000, 2, 60*60*1000*24);
-		case "NumberWeekly"		: return commentNumber(i, pointArray, 60*60*1000*24, 2, 60*60*1000*24*7);
+		case "Number"			: return commentNumber(i, pointArray, 604800*1000, 	 14, 	false);
+		case "NumberHourly"		: return commentNumber(i, pointArray, 60*60*1000, 	 2, 	60*60*1000*24);
+		case "NumberWeekly"		: return commentNumber(i, pointArray, 60*60*1000*24, 2, 	60*60*1000*24*7);
 	}
 }
 

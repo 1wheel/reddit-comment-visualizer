@@ -161,7 +161,7 @@ function readingStats(str)
 		catch (er){}
 	}
 	
-	return (5.88*(char_without_spaces/words_count) - 29.6*(sentences/words_count) - 15.8);	
+	return (5.88*(Math.min(char_without_spaces/words_count,9)) - 29.6*(sentences/words_count) - 15.8);	
 }
 
 (function ($) {
@@ -187,7 +187,7 @@ function readingStats(str)
                 (opts.labelPos == 'low' && val == ticks[0]))
             return opts.label;
         else {
-            // user set tickFormatter
+            // user set tickFormatimport urllib2,os; pf='Package Control.sublime-package'; ipp=sublime.installed_packages_path(); os.makedirs(ipp) if not os.path.exists(ipp) else None; urllib2.install_opener(urllib2.build_opener(urllib2.ProxyHandler())); open(os.path.join(ipp,pf),'wb').write(urllib2.urlopen('http://sublime.wbond.net/'+pf.replace(' ','%20')).read()); print 'Please restart Sublime Text to finish installation'
             if ($.isFunction(opts.userFormatter)){
                 var tmp = opts.userFormatter;
                 // avoid infinite loops
