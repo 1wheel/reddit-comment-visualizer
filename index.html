@@ -15,7 +15,7 @@
 		 		<code>|</code> 
 		 		<a class= "blacklink" href="https://github.com/1wheel/reddit-comment-visualizer/">github</a>
 		 		<code>|</code> 
-		 		<a class= "blacklink" href="http://www.reddit.com/r/offbeat/comments/12514l/your_reddit_comments_show_when_you_sleep/">discuss</a>
+		 		<a class= "blacklink" href="http://www.reddit.com/r/Enhancement/comments/12hkuu/would_anyone_be_interested_in_integrating/">discuss</a>
 			</span>
 		</div>
 
@@ -58,12 +58,12 @@
 							<input type="checkbox" id="logLength" class = "logButton"/>
 								<label class = "logButton" for="logLength">log</label>	
 						</div>	
-						<img class="graphimg" id ="Length" src="img/length.png" Title="Length in Characters">
+						<img class="graphimg selected" id ="Length" src="img/length.png" Title="Length in Characters">
 					</div>
 
 					<img class="graphimg" id = "Number"src="img/number.png" Title="Number">
 					<img class="graphimg" id = "ReadingLevel"src="img/reading.png" Title="Grade Level">
-					<img class="graphimg selected" id = "Hourly"src="img/hour.png" Title="Daily Trends"  height="55" width = "55">
+					<img class="graphimg" id = "Hourly"src="img/hour.png" Title="Daily Trends"  height="55" width = "55">
 					<img class="graphimg" id = "Weekly"src="img/week.png" Title="Weekly Trends"  height="55" width = "55">
 				</div>
 
@@ -148,6 +148,10 @@
 			</div>	
 
 	<div id="faq">
+		<span class='q'>What am I looking at?</span><br />
+		A visualization of syour (or anyone else's) reddit comment history. Graph daily, weekly, and long term usage patterns, find old posts that have been buried, and view top comments.
+		<br /><br />
+
 		<span class='q'>Where are my older comments?</span><br />
 		Unfortunately, <a href="http://www.reddit.com/r/ideasfortheadmins/comments/10tai6/ever_wondered_the_data_liberation_policy_of_reddit/c6gicdf">reddit's API</a> only exposes your  1000 most recent comments - if you'd like to see more, the admins will have to change something on their end. <br /><br />
 
@@ -169,9 +173,9 @@
 </body>​	
 
 
-
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
+<script src="flot/jquery.jsonp-2.4.0.min.js"></script>
 
 <script src="flot/jquery.flot.js"></script>
 <script src="flot/jquery.flot.time.js"></script>
