@@ -43,7 +43,7 @@ function startQuery(){
 		}
 		else {	
 			currentlyQuerying = true;
-			queryURL = 'http://www.reddit.com/user/' + userName + '/'+ (commentsQueried ? 'comments' : 'submitted')
+			queryURL = 'https://www.reddit.com/user/' + userName + '/'+ (commentsQueried ? 'comments' : 'submitted')
 						+ '/.json?jsonp=?&limit=100&';
 			queryReddit("", 0);
 		}
